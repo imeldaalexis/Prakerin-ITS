@@ -1,10 +1,4 @@
 
-<!-- How to Run -->
-<!-- Kamu bisa mengetes apakah setup-nya berhasil dengan menjalankan 
- php artisan serve 
- dan mencoba hit 
- [http://127.0.0.1:8000/api/auth/login](http://127.0.0.1:8000/api/auth/login) 
- menggunakan Postman. -->
 <?php
 
 use Illuminate\Support\Facades\Route;
