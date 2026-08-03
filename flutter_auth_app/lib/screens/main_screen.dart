@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'home_screen.dart';
+import 'profile_screen.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -15,7 +16,7 @@ class _MainScreenState extends State<MainScreen> {
     HomeScreen(),
     Center(child: Text('Halaman Appointment')),
     Center(child: Text('Halaman History')),
-    Center(child: Text('Halaman Profile')),
+    ProfileScreen(),
   ];
 
   void _onItemTapped(int index) {
@@ -49,7 +50,17 @@ class _MainScreenState extends State<MainScreen> {
             ),
             const BottomNavigationBarItem(icon: Icon(Icons.calendar_today_outlined), label: 'Appointment'),
             const BottomNavigationBarItem(icon: Icon(Icons.history_outlined), label: 'History'),
-            const BottomNavigationBarItem(icon: Icon(Icons.person_outline), label: 'Profile'),
+            BottomNavigationBarItem(
+              icon: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                decoration: BoxDecoration(
+                  color: _selectedIndex == 3 ? const Color(0xFFFFD166) : Colors.transparent,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Icon(Icons.person_outline, color: _selectedIndex == 3 ? const Color(0xFF04325F) : Colors.grey),
+              ),
+              label: 'Profile',
+            ),
           ],
           currentIndex: _selectedIndex,
           selectedItemColor: const Color(0xFF04325F),
