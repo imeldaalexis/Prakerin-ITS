@@ -17,36 +17,37 @@ class ApiService {
     required String nomorTelepon,
     required String password,
   }) async {
-    final url = Uri.parse('$baseUrl/register'); //
-    
+    final url = Uri.parse('$baseUrl/register');
+
     try {
       final response = await http.post(
         url,
         headers: {
-          'Accept': 'application/json', //
-          'Content-Type': 'application/json', //[cite: 1]
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
         },
         body: jsonEncode({
-          "nama_lengkap": namaLengkap, //[cite: 1]
-          "nik": nik, //[cite: 1]
-          "email": email, //[cite: 1]
-          "nomor_telepon": nomorTelepon, //[cite: 1]
-          "password": password, //[cite: 1]
-          "password_confirmation": password, //[cite: 1]
-          "is_agreed": true, //[cite: 1]
+          "nama_lengkap": namaLengkap,
+          "nik": nik,
+          "email": email,
+          "nomor_telepon": nomorTelepon,
+          "password": password,
+          "password_confirmation": password,
+          "is_agreed": true,
         }),
       );
 
       final responseData = jsonDecode(response.body);
 
-      if (response.statusCode == 201) { //[cite: 1]
-        // Menyimpan token otomatis agar pengguna tidak perlu login ulang setelah mendaftar[cite: 1]
+      if (response.statusCode == 201) {
         final prefs = await SharedPreferences.getInstance();
-        await prefs.setString('token', responseData['data']['token']); //[cite: 1]
-        return {'success': true, 'message': responseData['message']}; //[cite: 1]
+        await prefs.setString('token', responseData['data']['token']);
+        if (responseData['data']['user'] != null) {
+          await prefs.setString('user_data', jsonEncode(responseData['data']['user']));
+        }
+        return {'success': true, 'message': responseData['message']};
       } else {
-        // Response Gagal - Validasi 422 Unprocessable Entity[cite: 1]
-        return {'success': false, 'message': responseData['message'] ?? 'Data tidak valid'}; //[cite: 1]
+        return {'success': false, 'message': responseData['message'] ?? 'Data tidak valid'};
       }
     } catch (e) {
       return {'success': false, 'message': 'Gagal terhubung ke server'};
@@ -60,33 +61,86 @@ class ApiService {
     required String loginId,
     required String password,
   }) async {
-    final url = Uri.parse('$baseUrl/login'); //[cite: 1]
+    final url = Uri.parse('$baseUrl/login');
 
     try {
       final response = await http.post(
         url,
         headers: {
-          'Accept': 'application/json', //[cite: 1]
-          'Content-Type': 'application/json', //[cite: 1]
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
         },
         body: jsonEncode({
-          "login_id": loginId, //[cite: 1]
-          "password": password, //[cite: 1]
+          "login_id": loginId,
+          "password": password,
         }),
       );
 
       final responseData = jsonDecode(response.body);
 
-      if (response.statusCode == 200) { //[cite: 1]
+      if (response.statusCode == 200) {
         final prefs = await SharedPreferences.getInstance();
-        await prefs.setString('token', responseData['data']['token']); //[cite: 1]
-        return {'success': true, 'message': responseData['message']}; //[cite: 1]
+        await prefs.setString('token', responseData['data']['token']);
+        if (responseData['data']['user'] != null) {
+          await prefs.setString('user_data', jsonEncode(responseData['data']['user']));
+        }
+        return {'success': true, 'message': responseData['message']};
       } else {
-         // Response Gagal - Kredensial Salah 401 Unauthorized[cite: 1]
-        return {'success': false, 'message': responseData['message'] ?? 'Login Gagal'}; //[cite: 1]
+        return {'success': false, 'message': responseData['message'] ?? 'Login Gagal'};
       }
     } catch (e) {
       return {'success': false, 'message': 'Gagal terhubung ke server'};
     }
+  }
+
+  // ==========================================
+  // 3. Fungsi Logout
+  // ==========================================
+  static Future<Map<String, dynamic>> logout() async {
+    final url = Uri.parse('$baseUrl/logout');
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
+
+    try {
+      final response = await http.post(
+        url,
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+          if (token != null) 'Authorization': 'Bearer $token',
+        },
+      );
+
+      // Hapus token dan user_data dari SharedPreferences terlepas dari response status
+      await prefs.remove('token');
+      await prefs.remove('user_data');
+
+      if (response.statusCode == 200) {
+        final responseData = jsonDecode(response.body);
+        return {'success': true, 'message': responseData['message'] ?? 'Logout berhasil'};
+      } else {
+        return {'success': true, 'message': 'Logout selesai'};
+      }
+    } catch (e) {
+      await prefs.remove('token');
+      await prefs.remove('user_data');
+      return {'success': true, 'message': 'Logout lokal selesai'};
+    }
+  }
+
+  // ==========================================
+  // 4. Ambil User Data Terformat
+  // ==========================================
+  static Future<Map<String, dynamic>?> getUserData() async {
+    final prefs = await SharedPreferences.getInstance();
+    final String? userJson = prefs.getString('user_data');
+    if (userJson != null) {
+      try {
+        return jsonDecode(userJson) as Map<String, dynamic>;
+      } catch (_) {
+        return null;
+      }
+    }
+    return null;
   }
 }
