@@ -48,11 +48,12 @@ Before running this project, ensure you have the following installed on your loc
 
 Once the local server is up and running, you can test the authentication flow using [Postman](https://www.postman.com/) or any similar API client.
 
-### 1. Login Endpoint
+Example:
+### Login Endpoint
 To test the login functionality and retrieve your Sanctum access token:
 
 *   **Method:** `POST`
-*   **URL:** `http://127.0.0.1:8000/api/auth/login`
+*   **URL:** `http://0.0.0.0:8000/api/auth/login`
 *   **Headers:**
     *   `Accept` : `application/json`
 *   **Body (Raw -> JSON):**
